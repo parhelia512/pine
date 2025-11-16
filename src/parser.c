@@ -403,7 +403,8 @@ Type parse_type(Parser *parser) {
                 type = typedef_from_ident(convert.expr);
             }
         } break;
-        default: break;
+        default:
+            break;
     }
 
     return type;
@@ -474,7 +475,7 @@ Expr parse_primary(Parser *parser) {
                 return expr_none();
             }
         } break;
-        case TokIntLit: {
+        case TokIntLit:
             next(parser);
             return expr_intlit(
                 tok.string,
@@ -485,8 +486,7 @@ Expr parse_primary(Parser *parser) {
                 ),
                 (size_t)parser->cursors_idx
             );
-        } break;
-        case TokFloatLit: {
+        case TokFloatLit:
             next(parser);
             Expr expr = expr_floatlit(
                 tok.string,
@@ -498,15 +498,12 @@ Expr parse_primary(Parser *parser) {
                 (size_t)parser->cursors_idx
             );
             return expr;
-        } break;
-        case TokCharLit: {
+        case TokCharLit:
             next(parser);
             return expr_charlit(tok.string, (size_t)parser->cursors_idx);
-        } break;
-        case TokStrLit: {
+        case TokStrLit:
             next(parser);
             return expr_strlit(tok.string, (size_t)parser->cursors_idx);
-        } break;
         case TokLeftBracket: {
             next(parser);
             size_t index = (size_t)parser->cursors_idx;
@@ -1033,7 +1030,8 @@ Expr parse_range(Parser *parser) {
                 case TokCharLit:
                     *right = parse_or(parser);
                     break;
-                default: break;
+                default:
+                    break;
             }
 
             inclusive = true;
@@ -1045,7 +1043,8 @@ Expr parse_range(Parser *parser) {
                 case TokCharLit:
                     *right = parse_or(parser);
                     break;
-                default: break;
+                default:
+                    break;
             }
         }
 
@@ -1748,8 +1747,7 @@ Stmnt parser_parse(Parser *parser) {
     if (tok.kind == TokNone) return stmnt_none();
 
     switch (tok.kind) {
-        case TokIdent:
-        {
+        case TokIdent: {
             next(parser); // already checked if none
             Identifiers convert = convert_ident(parser, tok);
 
@@ -1787,6 +1785,7 @@ Stmnt parser_parse(Parser *parser) {
             next(parser);
             elog(parser, parser->cursors_idx, "unexpected token %s", tokenkind_stringify(tok.kind));
             parse_next_stmnt(parser);
+            break;
     }
 
     return stmnt_none();

@@ -74,29 +74,23 @@ strb token_stringify(Token tok) {
 
     switch (tok.kind) {
         case TokIdent:
-        {
             strbprintf(&s, "Ident(%s)", tok.string);
-        } break;
+            break;
         case TokIntLit:
-        {
             strbprintf(&s, "IntLit(%s)", tok.string);
-        } break;
+            break;
         case TokFloatLit:
-        {
             strbprintf(&s, "FloatLit(%s)", tok.string);
-        } break;
+            break;
         case TokCharLit:
-        {
             strbprintf(&s, "CharLit('%s')", tok.string);
-        } break;
+            break;
         case TokStrLit:
-        {
             strbprintf(&s, "StrLit(\"%s\")", tok.string);
-        } break;
+            break;
         case TokDirective:
-        {
             strbprintf(&s, "Directive(\"%s\")", tok.string);
-        } break;
+            break;
         case TokColon:
         case TokSemiColon:
         case TokEqual:
@@ -123,8 +117,7 @@ strb token_stringify(Token tok) {
         case TokExclaim:
         case TokUnderscore:
         case TokQuestion:
-        case TokNone:
-        {
+        case TokNone: {
             const char *kind = tokenkind_stringify(tok.kind);
             strbprintf(&s, "%s", kind);
         } break;
@@ -304,19 +297,16 @@ Lexer lexer(const char *source) {
             case '\r':
             case '\t':
             case '\n':
-            {
                 if (ch == '\r') continue;
                 resolve_buffer(&lex);
                 move_cursor(&lex);
-            } break;
+                break;
             case '#':
-            {
                 resolve_buffer(&lex);
                 lex.is_directive = true;
                 move_cursor(&lex);
-            } break;
+                break;
             case '\'':
-            {
                 if (lex.in_quotes) {
                     lex.in_quotes = false;
                     arrpush(lex.cursors, lex.cursor);
@@ -327,9 +317,8 @@ Lexer lexer(const char *source) {
                     lex.in_quotes = true;
                     move_cursor(&lex);
                 }
-            } break;
+                break;
             case '"':
-            {
                 if (lex.in_double_quotes) {
                     lex.in_double_quotes = false;
                     arrpush(lex.cursors, lex.cursor);
@@ -340,9 +329,8 @@ Lexer lexer(const char *source) {
                     lex.in_double_quotes = true;
                     move_cursor(&lex);
                 }
-            } break;
-            case '.':
-            {
+                break;
+            case '.': {
                 uint64_t u64 = 0;
                 if (AT(source, strlen(source), i + 1) == '.') {
                     lex.ignore_index = i + 1;
@@ -356,71 +344,54 @@ Lexer lexer(const char *source) {
                 }
             } break;
             case '?':
-            {
                 resolve_buffer_push_token(&lex, (Token){.kind = TokQuestion});
-            } break;
+                break;
             case ':':
-            {
                 resolve_buffer_push_token(&lex, (Token){.kind = TokColon});
-            } break;
+                break;
             case '(':
-            {
                 resolve_buffer_push_token(&lex, (Token){.kind = TokLeftBracket});
-            } break;
+                break;
             case ')':
-            {
                 resolve_buffer_push_token(&lex, (Token){.kind = TokRightBracket});
-            } break;
+                break;
             case '{':
-            {
                 resolve_buffer_push_token(&lex, (Token){.kind = TokLeftCurl});
-            } break;
+                break;
             case '}':
-            {
                 resolve_buffer_push_token(&lex, (Token){.kind = TokRightCurl});
-            } break;
+                break;
             case '<':
-            {
                 resolve_buffer_push_token(&lex, (Token){.kind = TokLeftAngle});
-            } break;
+                break;
             case '>':
-            {
                 resolve_buffer_push_token(&lex, (Token){.kind = TokRightAngle});
-            } break;
+                break;
             case '[':
-            {
                 resolve_buffer_push_token(&lex, (Token){.kind = TokLeftSquare});
-            } break;
+                break;
             case ']':
-            {
                 resolve_buffer_push_token(&lex, (Token){.kind = TokRightSquare});
-            } break;
+                break;
             case '=':
-            {
                 resolve_buffer_push_token(&lex, (Token){.kind = TokEqual});
-            } break;
+                break;
             case '!':
-            {
                 resolve_buffer_push_token(&lex, (Token){.kind = TokExclaim});
-            } break;
+                break;
             case ';':
-            {
                 resolve_buffer_push_token(&lex, (Token){.kind = TokSemiColon});
-            } break;
+                break;
             case ',':
-            {
                 resolve_buffer_push_token(&lex, (Token){.kind = TokComma});
-            } break;
+                break;
             case '+':
-            {
                 resolve_buffer_push_token(&lex, (Token){.kind = TokPlus});
-            } break;
+                break;
             case '-':
-            {
                 resolve_buffer_push_token(&lex, (Token){.kind = TokMinus});
-            } break;
+                break;
             case '*':
-            {
                 if (AT(source, strlen(source), i + 1) == '/') {
                     lex.ignore_index = i + 1;
                     lex.in_block_comment = false;
@@ -428,25 +399,20 @@ Lexer lexer(const char *source) {
                 } else {
                     resolve_buffer_push_token(&lex, (Token){.kind = TokStar});
                 }
-            } break;
+                break;
             case '^':
-            {
                 resolve_buffer_push_token(&lex, (Token){.kind = TokCaret});
-            } break;
+                break;
             case '|':
-            {
                 resolve_buffer_push_token(&lex, (Token){.kind = TokBar});
-            } break;
+                break;
             case '&':
-            {
                 resolve_buffer_push_token(&lex, (Token){.kind = TokAmpersand});
-            } break;
+                break;
             case '~':
-            {
                 resolve_buffer_push_token(&lex, (Token){.kind = TokTilde});
-            } break;
-            case '/':
-            {
+                break;
+            case '/': {
                 char next = AT(source, strlen(source), i + 1);
                 if (next == '/') {
                     lex.ignore_index = i + 1;
@@ -460,22 +426,19 @@ Lexer lexer(const char *source) {
                 }
             } break;
             case '%':
-            {
                 resolve_buffer_push_token(&lex, (Token){.kind = TokPercent});
-            } break;
+                break;
             case '\\':
-            {
                 if (lex.in_double_quotes || lex.in_quotes) {
                     lex.escaped = true;
                     push_buffer(&lex);
                 } else {
                     resolve_buffer_push_token(&lex, (Token){.kind = TokBackSlash});
                 }
-            } break;
+                break;
             default:
-            {
                 push_buffer(&lex);
-            } break;
+                break;
         }
     }
 

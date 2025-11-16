@@ -52,16 +52,16 @@ static bool decl_has_name(Stmnt stmnt, const char *key) {
 Stmnt ast_find_decl(Arr(Stmnt) ast, const char *key) {
     for (size_t i = 0; i < arrlenu(ast); i++) {
         switch (ast[i].kind) {
-            case SkExtern: {
+            case SkExtern:
                 if (decl_has_name(*ast[i].externf, key)) {
                     return *ast[i].externf;
                 }
-            } break;
-            default: {
+                break;
+            default:
                 if (decl_has_name(ast[i], key)) {
                     return ast[i];
                 }
-            } break;
+                break;
         }
     }
 
@@ -335,7 +335,8 @@ void sema_directive(Sema *sema, Stmnt *stmnt) {
                 elog(sema, stmnt->cursors_idx, "optimisation already set, cannot have more than one optimisation directive");
             }
             break;
-        default: break;
+        default:
+            break;
     }
 }
 
@@ -370,6 +371,7 @@ static Expr get_field(Sema *sema, Type type, const char *fieldname, size_t curso
                 expr_ident("len", type_integer(TkUsize, TYPECONST, cursor_idx), cursor_idx),
                 // NOTE: typeof(array.ptr) == cstring?
                 // this is definitely a bug
+                // TODO: fixme
                 expr_ident("ptr", type_cstring(TYPECONST, cursor_idx), cursor_idx),
             };
 

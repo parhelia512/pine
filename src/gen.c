@@ -97,7 +97,8 @@ void gen_directive(Gen *gen, Stmnt stmnt) {
         case DkOsmall:
             gen->compile_flags.optimisation = OlSmall;
             break;
-        default: break;
+        default:
+            break;
     }
 }
 
@@ -350,7 +351,7 @@ void gen_typename(Gen *gen, Type *types, size_t types_len, strb *typename) {
                 } else {
                     strbprintf(typename, "%s", ty);
                 }
-            }
+            } break;
         }
     }
 }
@@ -424,7 +425,8 @@ strb gen_numlit_expr(Expr expr) {
         case TkIsize:
             strbprintf(&s, "INT64_C(%s)", expr.lit);
             break;
-        default: break;
+        default:
+            break;
     }
 
     return s;
@@ -675,12 +677,11 @@ MaybeAllocStr gen_expr(Gen *gen, Expr expr) {
                 .alloced = false,
             };
         case EkIntLit:
-        case EkFloatLit: {
+        case EkFloatLit:
             return (MaybeAllocStr){
                 .str = gen_numlit_expr(expr),
                 .alloced = true,
             };
-        }
         case EkCharLit: {
             strb lit = NULL;
             strbprintf(&lit, "'%s'", expr.lit);
@@ -1045,7 +1046,8 @@ strb gen_decl_proto(Gen *gen, Stmnt stmnt) {
             name = stmnt.fndecl.name.ident;
             type = stmnt.fndecl.type;
             break;
-        default: break;
+        default:
+            break;
     }
 
     strb ret = NULL;
@@ -1263,8 +1265,6 @@ void gen_stmnt(Gen *gen, Stmnt *stmnt) {
             gen_fn_decl(gen, *stmnt, false);
             break;
         case SkStructDecl:
-            // do nothing, defs will be resolved later
-            break;
         case SkEnumDecl:
             // do nothing, defs will be resolved later
             break;

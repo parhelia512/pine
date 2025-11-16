@@ -91,27 +91,21 @@ void cli_usage(Cli cli, bool force) {
 
     switch (cli.command) {
         case CommandBuild:
-        {
             printfln("USAGE:");
             printfln("    build [filename]");
             printfln("    generate executable with entry point file");
             exit(0);
-        } break;
         case CommandRun:
-        {
             printfln("USAGE:");
             printfln("    run [filename]");
             printfln("    generate executable with entry point file and immediately run it");
             exit(0);
-        } break;
         default:
-        {
             printfln("USAGE:");
             printfln("    build [filename.cur] | build executable");
             printfln("    run [filename.cur] | build and run executable");
             printfln("    help | print this usage message (can be used after a command for specific usage)");
             exit(force);
-        } break;
     }
 }
 

@@ -116,10 +116,9 @@ bool tc_array_equals(Sema *sema, Type lhs, Type *rhs) {
 // rhs is a pointer because it might be correct if wrapped in an option
 bool tc_equals(Sema *sema, Type lhs, Type *rhs) {
     switch (lhs.kind) {
-        case TkVoid: {
+        case TkVoid:
             // NOTE: not sure about this
             return false;
-        }
         case TkNone:
             return false;
         case TkPoison:
