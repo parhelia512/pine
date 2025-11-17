@@ -69,8 +69,8 @@ typedef struct Range {
 } Range;
 
 typedef struct Type {
-    TypeKind kind;
     size_t cursors_idx;
+    TypeKind kind;
     bool constant;
 
     union {

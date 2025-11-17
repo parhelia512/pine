@@ -33,23 +33,21 @@ typedef struct Defer {
 } Defer;
 
 typedef struct Gen {
-    Arr(Stmnt) ast;
-
     strb code;
     strb defs;
 
-    uint8_t indent;
-    Arr(Defer) defers;
-
-    bool in_defs;
-    Dgraph dgraph;
     size_t def_loc;
-
     size_t code_loc;
 
+    bool in_defs;
+    uint8_t indent;
 
-    Arr(const char*) generated_typedefs;
     CompileFlags compile_flags;
+
+    Dgraph dgraph;
+    Arr(Defer) defers;
+    Arr(Stmnt) ast;
+    Arr(const char*) generated_typedefs;
 } Gen;
 
 typedef struct MaybeAllocStr {

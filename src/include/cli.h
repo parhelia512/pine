@@ -14,10 +14,10 @@ typedef struct Cli {
     Command command;
     bool help;
     bool keepc;
-    char *filename;
     bool pass_to_prog;
-    char **argv;
     int argc;
+    char **argv;
+    char *filename;
 } Cli;
 
 void cli_usage(Cli cli, bool force);

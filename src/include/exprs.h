@@ -110,7 +110,8 @@ typedef enum BinopKind {
     BkOr,
 } BinopKind;
 
-typedef struct Binop { // Binary Operation
+// Binary Operation
+typedef struct Binop {
     BinopKind kind;
 
     Expr *left;
@@ -126,7 +127,8 @@ typedef enum UnopKind {
     UkSizeof,
 } UnopKind;
 
-typedef struct Unop { // Unary Operation
+// Unary Operation
+typedef struct Unop {
     UnopKind kind;
     Expr *val;
 } Unop;
