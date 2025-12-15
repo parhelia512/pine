@@ -1498,12 +1498,7 @@ void gen_resolve_defs(Gen *gen) {
 
 void gen_generate(Gen *gen) {
     char *defs = {0};
-    bool defs_ok = read_entire_file("./newsrc/pine_builtin_defs.txt", &defs);
-    if (!defs_ok) {
-        strbprintf(&gen->defs, "%.*s", builtin_defs_len, builtin_defs);
-    } else {
-        strbprintf(&gen->defs, "%s", defs);
-    }
+    strbprintf(&gen->defs, "%.*s", builtin_defs_len, builtin_defs);
 
     strbprintf(&gen->code, "#include \"output.h\"\n");
 
