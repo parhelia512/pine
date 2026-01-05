@@ -1,4 +1,5 @@
+extern puts :: fn(s: cstring) i32;
+
 main :: fn() void {
-    x: u8 = 255;
-    x = 256;
+    puts("hello world");
 }

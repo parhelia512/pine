@@ -18,7 +18,6 @@ typedef enum ExprKind {
     EkFloatLit,
     EkCharLit,
     EkStrLit,
-    EkCstrLit,
     EkRangeLit,
     EkLiteral,
 
@@ -168,7 +167,6 @@ Expr expr_intlit(const char *s, Type t, size_t index);
 Expr expr_floatlit(const char *s, Type t, size_t index);
 Expr expr_charlit(const char *s, size_t index);
 Expr expr_strlit(const char *s, size_t index);
-Expr expr_cstrlit(const char *s, size_t index);
 Expr expr_ident(const char *s, Type t, size_t index);
 
 Expr expr_literal(Literal v, Type t, size_t index);

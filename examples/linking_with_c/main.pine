@@ -1,7 +1,0 @@
-#syslink "c"; #link "greet.o";
-
-extern greet :: fn(name: cstring) void;
-
-main :: fn() void {
-    greet(c"world");
-}

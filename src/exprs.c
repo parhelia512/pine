@@ -81,15 +81,6 @@ Expr expr_strlit(const char *s, size_t index) {
     };
 }
 
-Expr expr_cstrlit(const char *s, size_t index) {
-    return (Expr){
-        .kind = EkCstrLit,
-        .cursors_idx = index,
-        .type = type_cstring(TYPEVAR, index),
-        .lit = s,
-    };
-}
-
 Expr expr_ident(const char *v, Type t, size_t index) {
     return (Expr){
         .kind = EkIdent,

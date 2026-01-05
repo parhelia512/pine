@@ -257,7 +257,6 @@ Type *resolve_expr_type(Sema *sema, Expr *expr) {
         case EkNull:
         case EkTrue:
         case EkFalse:
-        case EkCstrLit:
         case EkStrLit:
         case EkCharLit:
         case EkUnop:
@@ -1144,7 +1143,6 @@ void sema_expr(Sema *sema, Expr *expr) {
         case EkFloatLit:
         case EkCharLit:
         case EkStrLit:
-        case EkCstrLit:
         case EkTrue:
         case EkFalse:
         case EkNull:

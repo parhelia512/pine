@@ -130,6 +130,10 @@ bool tc_equals(Sema *sema, Type lhs, Type *rhs) {
         case TkString:
             return rhs->kind == TkString;
         case TkCstring:
+            if (rhs->kind == TkString) {
+                rhs->kind = TkCstring;
+                return true;
+            }
             return rhs->kind == TkCstring;
         case TkTypeId:
             return rhs->kind == TkTypeId;

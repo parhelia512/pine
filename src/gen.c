@@ -691,15 +691,12 @@ MaybeAllocStr gen_expr(Gen *gen, Expr expr) {
         }
         case EkStrLit: {
             strb lit = NULL;
-            strbprintf(&lit, "(PineString){.ptr = \"%s\", .len = %zu}", expr.lit, strlen(expr.lit));
-            return (MaybeAllocStr){
-                .str = lit,
-                .alloced = true,
-            };
-        }
-        case EkCstrLit: {
-            strb lit = NULL;
-            strbprintf(&lit, "\"%s\"", expr.lit);
+            if (expr.type.kind == TkCstring) {
+                strbprintf(&lit, "\"%s\"", expr.lit);
+            } else {
+                strbprintf(&lit, "(PineString){.ptr = \"%s\", .len = %zu}", expr.lit, strlen(expr.lit));
+            }
+
             return (MaybeAllocStr){
                 .str = lit,
                 .alloced = true,
@@ -1497,9 +1494,7 @@ void gen_resolve_defs(Gen *gen) {
 }
 
 void gen_generate(Gen *gen) {
-    char *defs = {0};
     strbprintf(&gen->defs, "%.*s", builtin_defs_len, builtin_defs);
-
     strbprintf(&gen->code, "#include \"output.h\"\n");
 
     for (size_t i = 0; i < arrlenu(gen->ast); i++) {

@@ -49,7 +49,6 @@
 - String Type
 - String Literal
 - Cstring type
-- Cstring Literal
 - Option Type (?)
 - If Statement Capture (Option)
 - Array Indexing
