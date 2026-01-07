@@ -6,8 +6,7 @@ Pine is a statically typed compiled programming language with manual memory mana
 It's an ergonomic middle ground between C and C++, similar to new programming languages in this space.<br>
 
 ## Principles
-Pine's main principles are simplicity and ease of use. A language with these principles would be one that doesn't stand in the way of the programmer and has features you'd expect in a modern language.<br>
-To do this, we borrow features from other languages. For example, generics, receiver methods from Golang, options and errors from Zig, etc.
+Pine's main principle is to seamlessly interop with C and bring modern features while remaining simple to use.
 
 ## Features
 - Generics

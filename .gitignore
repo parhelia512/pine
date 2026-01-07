@@ -1,7 +1,3 @@
-xlang
-xlang.exe
-current
-current.exe
 pine
 pine.exe
 test
@@ -9,5 +5,4 @@ test.exe
 output.c
 output.h
 test.dSYM/
-tests/functions/*.o
 bin/*.o
