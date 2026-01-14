@@ -101,7 +101,7 @@ I thought about making constants in Pine only compile time values but this feels
 `^` is a pointer to a constant / immutable data.<br>
 
 ## How to build
-Any C compiler and Make are the only external dependencies needed to build.
+GCC or Clang, and Make are the only external dependencies needed to build.
 
 ### Building on Linux / Unix and Windows
 ```console
