@@ -1,4 +1,5 @@
 # Todos
+- Runtime Bounds Checking (and other safety features)
 - 128bit types (f128, u128, i128)
 - UTF-8 Strings
 - Generics

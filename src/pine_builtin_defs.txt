@@ -43,7 +43,7 @@ PineSlice1d_##Tname pineslice1d_##Tname(T *ptr, usize len) {\
 PineSlice1d_##Tname pineslice1d_range_##Tname(T *ptr, usize start, usize end) {\
     PineSlice1d_##Tname ret;\
     ret.ptr = &ptr[start];\
-    ret.len = end - 1;\
+    ret.len = end;\
     return ret;\
 }
 #define PineSlice2dDef(T, Tname)\
@@ -62,7 +62,7 @@ PineSlice2d_##Tname pineslice2d_##Tname(PineSlice1d_##Tname *ptr, usize len) {\
 PineSlice2d_##Tname pineslice2d_range_##Tname(PineSlice1d_##Tname *ptr, usize start, usize end) {\
     PineSlice2d_##Tname ret;\
     ret.ptr = &ptr[start];\
-    ret.len = end - 1;\
+    ret.len = end;\
     return ret;\
 }
 #define PineOptionDef(T, Tname)\

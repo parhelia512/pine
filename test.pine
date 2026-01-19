@@ -1,7 +1,9 @@
 extern puts :: fn(s: cstring) i32;
 
 main :: fn(args: []string) void {
-    for (i: usize = 0; i < args.len; i += 1) {
-        puts(args[i].ptr);
+    cli_args := args[1..];
+
+    for (i: usize = 0; i < cli_args.len; i += 1) {
+        puts(cli_args[i].ptr);
     }
 }
