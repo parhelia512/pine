@@ -265,7 +265,7 @@ strb gen_typename_array(Gen *gen, Type type) {
         if (st.kind == TkArray) {
             dim++;
 
-            MaybeAllocStr len = gen_expr_as_valid_text(gen, *st.array.len);
+            MaybeAllocStr len = gen_expr_for_identifier(gen, *st.array.len);
             strbprintf(&lengths, "%s", len.str);
             mastrfree(len);
 
@@ -382,9 +382,14 @@ MaybeAllocStr gen_option_expr(Gen *gen, Expr expr) {
     };
 }
 
-strb gen_numlit_expr(Expr expr) {
+strb gen_numlit_expr(Expr expr, bool for_identifier) {
     assert(expr.kind == EkIntLit || expr.kind == EkFloatLit);
     strb s = NULL;
+
+    if (for_identifier) {
+        strbprintf(&s, "%s", expr.lit);
+        return s;
+    }
 
     switch (expr.type.kind) {
         case TkF32:
@@ -661,21 +666,7 @@ MaybeAllocStr gen_binop_expr(Gen *gen, Expr expr) {
     };
 }
 
-MaybeAllocStr gen_expr_as_valid_text(Gen *gen, Expr expr) {
-    MaybeAllocStr result = gen_expr(gen, expr);
-
-    for (size_t i = 0; i < strlen(result.str); i++) {
-        switch (result.str[i]) {
-            case '(':
-            case ')':
-                result.str[i] = '_';
-        }
-    }
-
-    return result;
-}
-
-MaybeAllocStr gen_expr(Gen *gen, Expr expr) {
+MaybeAllocStr _gen_expr(Gen *gen, Expr expr, bool for_identifier) {
     if (expr.kind == EkType) {
         return gen_type(gen, expr.type_expr);
     }
@@ -697,7 +688,7 @@ MaybeAllocStr gen_expr(Gen *gen, Expr expr) {
         case EkIntLit:
         case EkFloatLit:
             return (MaybeAllocStr){
-                .str = gen_numlit_expr(expr),
+                .str = gen_numlit_expr(expr, for_identifier),
                 .alloced = true,
             };
         case EkCharLit: {
