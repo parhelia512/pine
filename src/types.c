@@ -32,9 +32,9 @@ Type type_char(CONSTNESS constant, size_t index) {
     };
 }
 
-Type type_string(CONSTNESS constant, size_t index) {
+Type type_string(TypeKind kind, CONSTNESS constant, size_t index) {
     return (Type){
-        .kind = TkString,
+        .kind = kind,
         .constant = constant,
         .cursors_idx = index,
     };
@@ -206,6 +206,9 @@ strb string_from_type(Type t) {
 
         case TkChar:
             strbprintf(&ret, "char");
+            break;
+        case TkUntypedString:
+            strbprintf(&ret, "untyped_string");
             break;
         case TkString:
             strbprintf(&ret, "string");

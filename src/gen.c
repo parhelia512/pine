@@ -265,7 +265,7 @@ strb gen_typename_array(Gen *gen, Type type) {
         if (st.kind == TkArray) {
             dim++;
 
-            MaybeAllocStr len = gen_expr(gen, *st.array.len);
+            MaybeAllocStr len = gen_expr_as_valid_text(gen, *st.array.len);
             strbprintf(&lengths, "%s", len.str);
             mastrfree(len);
 
@@ -659,6 +659,20 @@ MaybeAllocStr gen_binop_expr(Gen *gen, Expr expr) {
         .str = ret,
         .alloced = true,
     };
+}
+
+MaybeAllocStr gen_expr_as_valid_text(Gen *gen, Expr expr) {
+    MaybeAllocStr result = gen_expr(gen, expr);
+
+    for (size_t i = 0; i < strlen(result.str); i++) {
+        switch (result.str[i]) {
+            case '(':
+            case ')':
+                result.str[i] = '_';
+        }
+    }
+
+    return result;
 }
 
 MaybeAllocStr gen_expr(Gen *gen, Expr expr) {
@@ -1361,7 +1375,7 @@ void gen_block(Gen *gen, Arr(Stmnt) block) {
     gen_writeln(gen, "}");
 }
 
-void gen_fn_main_decl(Gen *gen, Stmnt stmnt) {
+void gen_main_fn_decl(Gen *gen, Stmnt stmnt) {
     assert(stmnt.kind == SkFnDecl);
     FnDecl fndecl = stmnt.fndecl;
 
@@ -1403,7 +1417,7 @@ void gen_fn_decl(Gen *gen, Stmnt stmnt, bool is_extern) {
 
     assert(stmnt.fndecl.name.kind == EkIdent && ".name is still expected to be Ident");
     if (fndecl.name.kind == EkIdent && streq("main", fndecl.name.ident)) {
-        gen_fn_main_decl(gen, stmnt);
+        gen_main_fn_decl(gen, stmnt);
         return;
     }
 

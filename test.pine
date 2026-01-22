@@ -1,16 +1,4 @@
-extern puts :: fn(s: cstring) i32;
-
-Shape :: enum {
-    Circle;
-    Square;
-}
-
-main :: fn() void {
-    shape := Shape.Circle;
-
-    if (shape == Shape.Circle) {
-        puts("circle");
-    } else if (shape == Shape.Square) {
-        puts("square");
-    }
+main :: fn(args: []string) void {
+    nums := [2]i32{1, 2};
+    n := nums[0];
 }

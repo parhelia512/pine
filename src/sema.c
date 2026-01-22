@@ -356,7 +356,7 @@ static Expr get_field(Sema *sema, Type type, const char *fieldname, size_t curso
             enum { StringFieldsLen = 2 };
             Expr StringFields[StringFieldsLen] = {
                 expr_ident("len", type_number(TkUsize, TYPECONST, cursor_idx), cursor_idx),
-                expr_ident("ptr", type_cstring(TYPECONST, cursor_idx), cursor_idx),
+                expr_ident("ptr", type_string(TkCstring, TYPECONST, cursor_idx), cursor_idx),
             };
 
             for (size_t i = 0; i < StringFieldsLen; i++) {
@@ -1509,6 +1509,37 @@ void sema_block(Sema *sema, Arr(Stmnt) body) {
     }
 }
 
+void sema_main_fn_decl(Sema *sema, Stmnt *stmnt) {
+    if (stmnt->fndecl.type.kind != TkVoid) {
+        strb t = string_from_type(stmnt->fndecl.type);
+        elog(sema, stmnt->cursors_idx, "illegal main function, expected return type to be void, got %s", t);
+        strbfree(t); 
+    }
+
+    if (arrlenu(stmnt->fndecl.args) >= 2) {
+        elog(sema, stmnt->cursors_idx, "illegal main function, expected no arguments or []string");
+    }
+
+    if (arrlenu(stmnt->fndecl.args) == 1) {
+        Stmnt arg = stmnt->fndecl.args[0];
+        if (arg.constdecl.type.kind != TkSlice) {
+            strb t = string_from_type(arg.constdecl.type);
+            elog(sema, arg.cursors_idx, "illegal main function, expected argument to be []string");
+            strbfree(t);
+            goto leave;
+        }
+
+        if (arg.constdecl.type.slice.of->kind != TkString) {
+            strb t = string_from_type(arg.constdecl.type);
+            elog(sema, arg.cursors_idx, "illegal main function, expected argument to be []string");
+            strbfree(t);
+        }
+    }
+
+leave:
+    return;
+}
+
 void sema_fn_decl(Sema *sema, Stmnt *stmnt) {
     assert(stmnt->kind == SkFnDecl);
 
@@ -1541,17 +1572,10 @@ void sema_fn_decl(Sema *sema, Stmnt *stmnt) {
         }
     }
 
-    if (stmnt->fndecl.type.kind == TkPoison) {
-        goto after_main_fn_check;
+    if (streq("main", stmnt->fndecl.name.ident)) {
+        sema_main_fn_decl(sema, stmnt);
     }
 
-    if (streq("main", stmnt->fndecl.name.ident) && stmnt->fndecl.type.kind != TkVoid) {
-        strb t = string_from_type(stmnt->fndecl.type);
-        elog(sema, stmnt->cursors_idx, "illegal main function, expected return type to be void, got %s", t);
-        strbfree(t); 
-    }
-
-after_main_fn_check:
     sema->envinfo.fn = *stmnt;
     sema_block(sema, stmnt->fndecl.body);
 

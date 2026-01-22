@@ -102,6 +102,8 @@ uint64_t eval_sizeof(Sema *sema, Type type) {
             // NOTE: not sure if this is the best way to handle this
             return BITS_TO_BYTES(64);
 
+        case TkUntypedString:
+            // NOTE: evals to sizeof(string), might need to change in the future
         case TkString:
             // TODO: this is platform dependent, (ptr 32 / 64, len 32 / 64)
             return BITS_TO_BYTES(128);

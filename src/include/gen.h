@@ -60,6 +60,7 @@ void gen_fn_decl(Gen *gen, Stmnt stmnt, bool is_extern);
 void gen_decl_generic(Gen *gen, Type type);
 void gen_generate(Gen *gen);
 MaybeAllocStr gen_expr(Gen *gen, Expr expr);
+MaybeAllocStr gen_expr_as_valid_text(Gen *gen, Expr expr);
 MaybeAllocStr gen_type(Gen *gen, Type type);
 void gen_typename(Gen *gen, Type *types, size_t types_len, strb *);
 void gen_stmnt(Gen *gen, Stmnt *stmnt);

@@ -127,12 +127,19 @@ bool tc_equals(Sema *sema, Type lhs, Type *rhs) {
             return rhs->kind == TkBool;
         case TkChar:
             return rhs->kind == TkChar;
+        case TkUntypedString:
+            if (rhs->kind == TkString || rhs->kind == TkCstring) {
+                return true;
+            }
+            return false;
         case TkString:
+            if (rhs->kind == TkUntypedString) {
+                rhs->kind = TkString;
+            }
             return rhs->kind == TkString;
         case TkCstring:
-            if (rhs->kind == TkString) {
+            if (rhs->kind == TkUntypedString) {
                 rhs->kind = TkCstring;
-                return true;
             }
             return rhs->kind == TkCstring;
         case TkTypeId:
@@ -416,6 +423,8 @@ Type tc_default_untyped_type(Type type) {
         return type_number(TkU64, TYPEVAR, type.cursors_idx);
     } else if (type.kind == TkUntypedFloat) {
         return type_number(TkF64, TYPEVAR, type.cursors_idx);
+    } else if (type.kind == TkUntypedString) {
+        return type_string(TkString, TYPEVAR, type.cursors_idx);
     }
 
     return type_none();
@@ -518,8 +527,9 @@ void tc_make_constant(Type *type) {
         case TkUntypedInt:
         case TkUntypedUint:
         case TkUntypedFloat:
+        case TkUntypedString:
         case TkNone:
-            assert(false && "cannot make void, untyped_int, untyped_float, or None constant");
+            assert(false && "cannot make void, untyped_int, untyped_uint, untyped_float, untyped_string, or None constant");
     }
 }
 

@@ -76,7 +76,7 @@ Expr expr_strlit(const char *s, size_t index) {
     return (Expr){
         .kind = EkStrLit,
         .cursors_idx = index,
-        .type = type_string(TYPEVAR, index),
+        .type = type_string(TkUntypedString, TYPEVAR, index),
         .lit = s,
     };
 }
