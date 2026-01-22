@@ -1,4 +1,5 @@
 #include <stdarg.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include "include/cli.h"
 #include "include/utils.h"
@@ -17,19 +18,18 @@ static Cli cli_init(char ***argv, int *argc) {
     };
 }
 
-static char *cli_args_peek(Cli *cli) {
-    if (cli->argc == 0) {
-        comp_elog("expected another argument");
-    }
-
-    return cli->argv[0];
-}
+// static char *cli_args_peek(Cli *cli) {
+//     if (cli->argc == 0) {
+//         comp_elog("expected another argument");
+//     }
+//
+//     return cli->argv[0];
+// }
 
 static char *cli_args_next(Cli *cli) {
     if (cli->argc == 0) {
         comp_elog("expected another argument");
     }
-
 
     char *arg = cli->argv[0];
     cli->argv += 1;
@@ -62,7 +62,7 @@ static void cli_parse_build(Cli *cli) {
     }
 
     cli->command = CommandBuild;
-    char *arg = cli_args_peek(cli);
+    char *arg = cli_args_next(cli);
     if (cli_is_command(arg)) {
         comp_elog("unexpected %s, expected filename or help", arg);
     }
@@ -76,7 +76,7 @@ static void cli_parse_run(Cli *cli) {
     }
 
     cli->command = CommandRun;
-    char *arg = cli_args_peek(cli);
+    char *arg = cli_args_next(cli);
     if (cli_is_command(arg)) {
         comp_elog("unexpected %s, expected filename or help", arg);
     }
@@ -89,22 +89,36 @@ void cli_usage(Cli cli, bool force) {
         return;
     }
 
+    const char *usage =
+        "Usage: pine [flags] [command] [options]\n"
+        "\n"
+        "Flags:\n"
+        "  -emit-c      Emit C source code\n"
+        "\n"
+        "Commands:\n"
+        "  build   Build project\n"
+        "  run     Build and run project\n"
+        "\n"
+        "Options:\n"
+        "  help    Print command usage\n"
+    ;
+
+    const char *build_usage = "Usage: pine build [file]\n";
+
+    const char *run_usage =
+        "Usage: pine run [file]\n"
+        "       pine run [file] -- [args]\n"
+    ;
+
     switch (cli.command) {
         case CommandBuild:
-            printfln("USAGE:");
-            printfln("    build [filename]");
-            printfln("    generate executable with entry point file");
+            printf("%s", build_usage);
             exit(0);
         case CommandRun:
-            printfln("USAGE:");
-            printfln("    run [filename]");
-            printfln("    generate executable with entry point file and immediately run it");
+            printf("%s", run_usage);
             exit(0);
         default:
-            printfln("USAGE:");
-            printfln("    build [filename.pine] | build executable");
-            printfln("    run [filename.pine] | build and run executable");
-            printfln("    help | print this usage message (can be used after a command for specific usage)");
+            printf("%s", usage);
             exit(force);
     }
 }
@@ -122,11 +136,13 @@ Cli cli_parse(char **argv, int argc) {
             cli_parse_run(&cli);
         } else if (streq(arg, "help")) {
             cli_parse_help(&cli);
-        } else if (streq(arg, "-keepc")) {
+        } else if (streq(arg, "-emit-c")) {
             cli.keepc = true;
         } else if (streq(arg, "--")) {
             cli.pass_to_prog = true;
             break;
+        } else {
+            comp_elog("unknown \"%s\"", arg);
         }
     }
 

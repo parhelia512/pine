@@ -155,6 +155,7 @@ int main(int argc, char **argv) {
             run(cli, exe);
         } break;
         default:
+            printfln(TERM_RED "error" TERM_END ": no command given");
             cli_usage(cli, true);
             break;
     }
