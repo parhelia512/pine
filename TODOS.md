@@ -1,5 +1,4 @@
 # Todos
-- Runtime Bounds Checking (and other safety features)
 - 128bit types (f128, u128, i128)
 - UTF-8 Strings
 - Generics
@@ -16,10 +15,11 @@
 - First Class Vectors
 - First Class Matrices?
 - Optimise The Compiler
-- Support 32bit Machines In The Compiler
+- 32bit Compiler Support
 - Standard Library
 
 # In Progress
+- Runtime Bounds Checking (and other safety features)
 - For Loops
 - Switch Statements
 - Better Error Messages

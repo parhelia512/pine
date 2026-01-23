@@ -5,6 +5,7 @@
 #include <stdint.h>
 #include <stdbool.h>
 #include "exprs.h"
+#include "lexer.h"
 #include "sema.h"
 #include "stmnts.h"
 #include "stb_ds.h"
@@ -48,6 +49,8 @@ typedef struct Gen {
     Arr(Defer) defers;
     Arr(Stmnt) ast;
     Arr(const char*) generated_typedefs;
+    Arr(Cursor) cursors;
+    const char *filename;
 } Gen;
 
 typedef struct MaybeAllocStr {
@@ -67,7 +70,7 @@ MaybeAllocStr gen_type(Gen *gen, Type type);
 void gen_typename(Gen *gen, Type *types, size_t types_len, strb *);
 void gen_stmnt(Gen *gen, Stmnt *stmnt);
 void gen_block(Gen *gen, Arr(Stmnt) stmnt);
-Gen gen_init(Arr(Stmnt) ast, Dgraph dgraph);
+Gen gen_init(Arr(Stmnt) ast, Dgraph dgraph, const char *filename, Arr(Cursor) cursors);
 
 #define gen_expr(gen, expr) _gen_expr((gen), (expr), false)
 #define gen_expr_for_identifier(gen, expr) _gen_expr((gen), (expr), true)

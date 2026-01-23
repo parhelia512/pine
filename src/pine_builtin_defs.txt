@@ -27,6 +27,13 @@ typedef struct PineString {
     usize len;
 } PineString;
 
+_Noreturn void exit(int code);
+int printf(const char *fmt, ...);
+
+#define pinepanic(file, line, fmt, ...) (printf("panic %s:%s: ", file, line), printf(fmt, __VA_ARGS__), printf("\n"), exit(1))
+#define pinearrat(file, line, arr, index, N) (*(((index) >= (N)) ? (pinepanic((file), (line), "index %zu is out of bounds: 0..<%zu", (size_t)(index), (size_t)(N)), (arr)) : &(arr)[(index)]))
+#define pinesliceat(file, line, arr, index) (*(((index) >= (arr).len) ? (pinepanic((file), (line), "index %zu is out of bounds: 0..<%zu", (size_t)(index), (arr).len), (arr).ptr) : &((arr).ptr)[(index)]))
+
 #define PineSlice1dDef(T, Tname)\
 typedef struct PineSlice1d_##Tname {\
     T *ptr;\

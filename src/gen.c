@@ -7,6 +7,7 @@
 #include <stdbool.h>
 #include "include/gen.h"
 #include "include/exprs.h"
+#include "include/lexer.h"
 #include "include/sema.h"
 #include "include/stb_ds.h"
 #include "include/stmnts.h"
@@ -21,7 +22,7 @@ void mastrfree(MaybeAllocStr s) {
     if (s.alloced) strbfree(s.str);
 }
 
-Gen gen_init(Arr(Stmnt) ast, Dgraph dgraph) {
+Gen gen_init(Arr(Stmnt) ast, Dgraph dgraph, const char *filename, Arr(Cursor) cursors) {
     return (Gen){
         .ast = ast,
         .code = NULL,
@@ -42,6 +43,8 @@ Gen gen_init(Arr(Stmnt) ast, Dgraph dgraph) {
             .optimisation = OlDebug,
             .output = "",
         },
+        .cursors = cursors,
+        .filename = filename,
     };
 }
 
@@ -797,9 +800,11 @@ MaybeAllocStr _gen_expr(Gen *gen, Expr expr, bool for_identifier) {
             if (expr.fieldacc.accessing->type.kind == TkPtr) {
                 strbprintf(&ret, "(*%s)[%s]", access.str, index.str);
             } else if (expr.fieldacc.accessing->type.kind == TkSlice) {
-                strbprintf(&ret, "(%s.ptr)[%s]", access.str, index.str);
+                strbprintf(&ret, "pinesliceat(\"%s\", \"%lu\", %s, %s)", gen->filename, gen->cursors[expr.cursors_idx].row, access.str, index.str);
             } else {
-                strbprintf(&ret, "(%s)[%s]", access.str, index.str);
+                MaybeAllocStr len = gen_expr(gen, *expr.arrayidx.accessing->type.array.len);
+                strbprintf(&ret, "pinearrat(\"%s\", \"%lu\", %s, %s, %s)", gen->filename, gen->cursors[expr.cursors_idx].row, access.str, index.str, len.str);
+                mastrfree(len);
             }
 
             mastrfree(access);

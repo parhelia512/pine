@@ -10,7 +10,7 @@ typedef struct Type Type;
 typedef struct Expr Expr;
 
 typedef enum TypeKind {
-    TkNone, // null
+    TkNone,
 
     TkVoid,
     TkBool,

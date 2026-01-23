@@ -91,14 +91,14 @@ const char *build(Cli cli) {
         exit(1);
     }
 
-    Sema sema = sema_init(ast, cli.filename, lex.cursors, parser.error_count);
+    Sema sema = sema_init(ast, cli.filename, lex.cursors);
     sema_analyse(&sema);
 
     if (sema.error_count > 0) {
         exit(1);
     }
 
-    Gen gen = gen_init(ast, sema.dgraph);
+    Gen gen = gen_init(ast, sema.dgraph, cli.filename, lex.cursors);
     gen_generate(&gen);
     gen.compile_flags.keepc = cli.keepc;
 

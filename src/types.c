@@ -171,7 +171,7 @@ strb string_from_type(Type t) {
 
         case TkPtr: {
             strb sub = string_from_type(*t.ptr_to);
-            strbprintf(&ret, "*%s", sub);
+            strbprintf(&ret, "%c%s", t.constant ? '^' : '*', sub);
         } break;
         case TkRange: {
             strb sub = string_from_type(*t.range.subtype);

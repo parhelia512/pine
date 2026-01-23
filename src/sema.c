@@ -160,7 +160,7 @@ void dgraph_push(Dgraph *graph, Dnode node) {
     }
 }
 
-Sema sema_init(Arr(Stmnt) ast, const char *filename, Arr(Cursor) cursors, int error_count) {
+Sema sema_init(Arr(Stmnt) ast, const char *filename, Arr(Cursor) cursors) {
     hmsi64 *typedef_sizes = NULL;
     shdefault(typedef_sizes, -1);
 
@@ -182,7 +182,7 @@ Sema sema_init(Arr(Stmnt) ast, const char *filename, Arr(Cursor) cursors, int er
 
         .filename = filename,
         .cursors = cursors,
-        .error_count = error_count,
+        .error_count = 0,
     };
 }
 
@@ -466,6 +466,7 @@ void sema_field_access(Sema *sema, Expr *expr) {
     if (expr->fieldacc.accessing->type.kind == TkPtr) {
         expr->type = *deref_ptr(type);
     } else {
+        expr->type = type_poison();
         strb t = string_from_type(expr->fieldacc.accessing->type);
         elog(sema, expr->cursors_idx, "cannot derefernce %s, not a pointer", t);
         strbfree(t);
@@ -510,6 +511,7 @@ void sema_array_slice(Sema *sema, Expr *expr) {
     } else if (arrtype->kind == TkPoison) {
         expr->type = type_poison();
     } else {
+        expr->type = type_poison();
         strb t = string_from_type(*arrtype);
         elog(sema, expr->cursors_idx, "cannot slice %s, not an array", t);
         strbfree(t);
@@ -542,10 +544,12 @@ void sema_array_index(Sema *sema, Expr *expr) {
     } else if (arrtype->kind == TkSlice) {
         expr->type = *arrtype->slice.of;
     } else {
+        expr->type = type_poison();
         strb t = string_from_type(*arrtype);
         elog(sema, expr->cursors_idx, "cannot index into %s, not an array", t);
         strbfree(t);
     }
+
 }
 
 void sema_slice_literal(Sema *sema, Expr *expr) {
@@ -847,6 +851,7 @@ void sema_unop(Sema *sema, Expr *expr) {
                 return;
             }
             if (!tc_can_cast(sema, &expr->unop.val->type, expr->type)) {
+                expr->type = type_poison();
                 strb t1 = string_from_type(expr->unop.val->type);
                 strb t2 = string_from_type(expr->type);
                 elog(sema, expr->cursors_idx, "cannot cast %s to %s", t1, t2);
