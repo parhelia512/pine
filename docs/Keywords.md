@@ -199,7 +199,7 @@ See the above `switch` keyword explanation.
 ## for
 For loop as seen in C as well as an iterative for loop (for each). Note that the iterative for loop uses `[]` as part of the syntax.
 ```
-for ([<decl_name: decl_type = decl_value>]; <condition>; [<statement>]) {
+for ([<decl_name: decl_type = decl_value>]; <condition>; [<statement>;]) {
     // body
 }
 for (<iterator>) [<capture> [<, index>]] {
@@ -207,11 +207,11 @@ for (<iterator>) [<capture> [<, index>]] {
     // the `index` is optional but must have a `,` before naming the index.
 }
 
-for (i: usize = 0; i < large_num; i += 1) {
+for (i: usize = 0; i < large_num; i += 1;) {
     // `i` is only available within this scope.
 }
 
-for (; i > 0; i -= 1) {
+for (; i > 0; i -= 1;) {
     // `i` has already been declared.
 }
 
