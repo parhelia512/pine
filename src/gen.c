@@ -1219,11 +1219,11 @@ void gen_if(Gen *gen, Stmnt stmnt) {
 
     MaybeAllocStr cond = gen_expr(gen, iff.condition);
 
-    if (iff.capturekind != CkNone) {
+    if (iff.capture.kind != CkNone) {
         gen_writeln(gen, "if (%s.ok) {", cond.str);
 
         gen->indent++;
-        strb proto = gen_decl_proto(gen, *iff.capture.constdecl);
+        strb proto = gen_decl_proto(gen, *iff.capture.decl);
         gen_writeln(gen, "%s = %s.some;", proto, cond.str);
         gen_indent(gen);
 
@@ -1234,7 +1234,7 @@ void gen_if(Gen *gen, Stmnt stmnt) {
 
     gen_block(gen, iff.body);
 
-    if (iff.capturekind != CkNone) {
+    if (iff.capture.kind != CkNone) {
         gen->indent--;
         gen_indent(gen);
         gen_writeln(gen, "}");
@@ -1336,17 +1336,25 @@ void gen_for_each_array(Gen *gen, Stmnt stmnt) {
     assert(stmnt.kind == SkForEach && stmnt.foreach.iterator.type.kind == TkArray);
     ForEach foreach = stmnt.foreach;
 
-    strb index = gen_random_ident();
+    MaybeAllocStr index;
+    if (foreach.captures[1].kind != CkNone) {
+        index.str = (char*)foreach.captures[1].decl->constdecl.name.ident;
+        index.alloced = false;
+    } else {
+        index.str = gen_random_ident();
+        index.alloced = true;
+    }
+
     MaybeAllocStr access = gen_expr(gen, foreach.iterator);
     MaybeAllocStr len = gen_expr(gen, *foreach.iterator.type.array.len);
 
     // create loop
     gen_indent(gen);
-    gen_writeln(gen, "for (usize %s = 0; %s < %s; %s++) {", index, index, len.str, index);
+    gen_writeln(gen, "for (usize %s = 0; %s < %s; %s++) {", index.str, index.str, len.str, index.str);
 
     // create catpure
-    strb proto = gen_decl_proto(gen, *foreach.capture.constdecl);
-    gen_writeln(gen, "%s = (%s)[%s];", proto, access.str, index);
+    strb proto = gen_decl_proto(gen, *foreach.captures[0].decl);
+    gen_writeln(gen, "%s = (%s)[%s];", proto, access.str, index.str);
 
     gen->indent++;
     gen_indent(gen);
@@ -1359,21 +1367,28 @@ void gen_for_each_array(Gen *gen, Stmnt stmnt) {
     strbfree(proto);
     mastrfree(access);
     mastrfree(len);
-    strbfree(index);
+    mastrfree(index);
 }
 
 void gen_for_each_slice(Gen *gen, Stmnt stmnt) {
     assert(stmnt.kind == SkForEach && stmnt.foreach.iterator.type.kind == TkSlice);
     ForEach foreach = stmnt.foreach;
 
-    strb index = gen_random_ident();
+    MaybeAllocStr index;
+    if (foreach.captures[1].kind != CkNone) {
+        index.str = (char*)foreach.captures[1].decl->constdecl.name.ident;
+        index.alloced = false;
+    } else {
+        index.str = gen_random_ident();
+        index.alloced = true;
+    }
     MaybeAllocStr access = gen_expr(gen, foreach.iterator);
 
     // create loop
     gen_indent(gen);
-    gen_writeln(gen, "for (usize %s = 0; %s < (%s).len; %s++) {", index, index, access.str, index);
+    gen_writeln(gen, "for (usize %s = 0; %s < (%s).len; %s++) {", index.str, index.str, access.str, index.str);
 
-    strb proto = gen_decl_proto(gen, *foreach.capture.constdecl);
+    strb proto = gen_decl_proto(gen, *foreach.captures[0].decl);
     gen_writeln(gen, "%s = (%s).ptr[%s];", proto, access.str, index);
 
     gen->indent++;
@@ -1386,7 +1401,7 @@ void gen_for_each_slice(Gen *gen, Stmnt stmnt) {
 
     strbfree(proto);
     mastrfree(access);
-    strbfree(index);
+    mastrfree(index);
 }
 
 void gen_for_each_range(Gen *gen, Stmnt stmnt) {
@@ -1394,7 +1409,7 @@ void gen_for_each_range(Gen *gen, Stmnt stmnt) {
     ForEach foreach = stmnt.foreach;
 
     MaybeAllocStr subtype = gen_type(gen, *foreach.iterator.type.range.subtype);
-    const char *index = foreach.capture.constdecl->constdecl.name.ident;
+    const char *index = foreach.captures[0].decl->constdecl.name.ident;
     MaybeAllocStr start = gen_expr(gen, *foreach.iterator.rangelit.start);
     MaybeAllocStr end = gen_expr(gen, *foreach.iterator.rangelit.end);
     bool inclusive = foreach.iterator.rangelit.inclusive;

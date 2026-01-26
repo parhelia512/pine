@@ -1330,7 +1330,7 @@ void sema_if(Sema *sema, Stmnt *stmnt) {
     }
 
     Stmnt *captured = ealloc(sizeof(Stmnt)); *captured = stmnt_none();
-    if (iff->capturekind != CkNone) {
+    if (iff->capture.kind != CkNone) {
         assert(iff->condition.type.kind == TkOption);
         Type subtype = *iff->condition.type.option.subtype;
         *captured = stmnt_constdecl((ConstDecl){
@@ -1338,8 +1338,8 @@ void sema_if(Sema *sema, Stmnt *stmnt) {
             .type = subtype,
             .value = expr_null(type_none(), iff->capture.ident.cursors_idx),
         }, iff->capture.ident.cursors_idx);
-        iff->capture.constdecl = captured;
-        iff->capturekind = CkConstDecl;
+        iff->capture.decl = captured;
+        iff->capture.kind = CkConstDecl;
     }
 
     symtab_new_scope(sema);
@@ -1455,19 +1455,22 @@ void sema_for_each(Sema *sema, Stmnt *stmnt) {
     Type subtype = type_none();
     switch (foreach->iterator.type.kind) {
         case TkRange:
-            if (foreach->capturekind == CkNone) {
+            if (foreach->captures[1].kind != CkNone) {
+                elog(sema, foreach->captures[1].ident.cursors_idx, "cannot capture more than one value from range in for loop");
+            }
+            if (foreach->captures[0].kind == CkNone) {
                 break;
             }
             subtype = *foreach->iterator.type.range.subtype;
             break;
         case TkSlice:
-            if (foreach->capturekind == CkNone) {
+            if (foreach->captures[0].kind == CkNone) {
                 break;
             }
             subtype = *foreach->iterator.type.slice.of;
             break;
         case TkArray:
-            if (foreach->capturekind == CkNone) {
+            if (foreach->captures[0].kind == CkNone) {
                 break;
             }
             subtype = *foreach->iterator.type.array.of;
@@ -1477,33 +1480,37 @@ void sema_for_each(Sema *sema, Stmnt *stmnt) {
             elog(sema, stmnt->cursors_idx, "cannot iterate over %s, must be an array, slice, or range", t);
             strbfree(t);
 
-            if (foreach->capturekind == CkNone) {
+            if (foreach->captures[0].kind == CkNone) {
                 break;
             }
             subtype = type_poison();
             break;
     }
 
-    Stmnt *capture = ealloc(sizeof(Stmnt));
-    *capture = stmnt_constdecl((ConstDecl){
-        .type = subtype,
-        .name = foreach->capture.ident,
-        .value = expr_none(),
-    }, foreach->capture.ident.cursors_idx);
-
-    foreach->capturekind = CkConstDecl;
-    foreach->capture.constdecl = capture;
-
     symtab_new_scope(sema);
-    if (capture->constdecl.type.kind != TkNone) {
-        symtab_push(sema, capture->constdecl.name.ident, *capture);
-    } else {
-        free(capture);
+    for (int i = 0; i < 2; i++) {
+        Capture *capture = &foreach->captures[i];
+        if (capture->kind == CkNone) {
+            break;
+        }
+
+        Stmnt *val = ealloc(sizeof(Stmnt));
+        *val = stmnt_constdecl((ConstDecl){
+            .type = i == 0 ? subtype : type_number(TkUsize, TYPEVAR, capture->ident.cursors_idx),
+            .name = capture->ident,
+            .value = expr_none(),
+        }, capture->ident.cursors_idx);
+
+        capture->kind = CkConstDecl;
+        capture->decl = val;
+
+        symtab_push(sema, capture->decl->constdecl.name.ident, *capture->decl);
     }
 
     sema->envinfo.forl = true;
     sema_block(sema, foreach->body);
     sema->envinfo.forl = false;
+
     symtab_pop_scope(sema);
 }
 

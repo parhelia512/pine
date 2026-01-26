@@ -1647,8 +1647,10 @@ Stmnt parse_if(Parser *parser) {
     return stmnt_if((If){
         .condition = cond,
         .body = body,
-        .capture.ident = capture,
-        .capturekind = capture.kind == EkNone ? CkNone : CkIdent,
+        .capture = (Capture){
+            .ident = capture,
+            .kind = capture.kind == EkNone ? CkNone : CkIdent,
+        },
         .els = else_block,
     }, index);
 }
@@ -1714,7 +1716,9 @@ Stmnt parse_switch(Parser *parser) {
     return stmnt_switch((Switch){
         .value = ident,
         .cases = cases,
-        .capturekind = CkNone,
+        .capture = (Capture){
+            .kind = CkNone,
+        },
     }, index);
 }
 
@@ -1731,7 +1735,10 @@ Stmnt parse_for_each(Parser *parser) {
     expect(parser, TokRightBracket);
 
     Token tok = peek(parser);
-    Expr capture = expr_none();
+    Capture captures[2] = {
+        (Capture){.kind = CkNone},
+        (Capture){.kind = CkNone},
+    };
     // for (<iterator>) <[capture]>
     if (tok.kind == TokLeftSquare) {
         next(parser);
@@ -1739,11 +1746,29 @@ Stmnt parse_for_each(Parser *parser) {
 
         Identifiers convert = convert_ident(parser, tok);
         if (convert.kind == IkIdent) {
-            capture = convert.expr;
+            captures[0].kind = CkIdent;
+            captures[0].ident = convert.expr;
         } else {
             elog(parser, parser->cursors_idx, "capture must be a unique identifier");
             return parse_next_stmnt(parser);
         }
+
+        tok = peek(parser);
+        if (tok.kind != TokComma) {
+            expect(parser, TokRightSquare);
+        }
+
+        next(parser);
+        tok = next(parser);
+        convert = convert_ident(parser, tok);
+        if (convert.kind == IkIdent) {
+            captures[1].kind = CkIdent;
+            captures[1].ident = convert.expr;
+        } else {
+            elog(parser, parser->cursors_idx, "capture must be a unique identifier");
+            return parse_next_stmnt(parser);
+        }
+
         expect(parser, TokRightSquare);
     }
 
@@ -1751,8 +1776,8 @@ Stmnt parse_for_each(Parser *parser) {
 
     return stmnt_foreach((ForEach){
         .iterator = iterator,
-        .capture.ident = capture,
-        .capturekind = capture.kind == EkNone ? CkNone : CkIdent,
+        .captures[0] = captures[0],
+        .captures[1] = captures[1],
         .body = body,
     }, index);
 }

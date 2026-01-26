@@ -66,14 +66,17 @@ typedef enum CaptureKind {
     CkConstDecl,
 } CaptureKind;
 
-typedef struct If {
-    Expr condition;
-
-    CaptureKind capturekind;
+typedef struct Capture {
+    CaptureKind kind;
     union {
         Expr ident;
-        Stmnt *constdecl;
-    } capture;
+        Stmnt *decl;
+    };
+} Capture;
+
+typedef struct If {
+    Expr condition;
+    Capture capture;
 
     Arr(Stmnt) body;
     Arr(Stmnt) els;
@@ -81,12 +84,7 @@ typedef struct If {
 
 typedef struct Switch {
     Expr value;
-
-    CaptureKind capturekind;
-    union {
-        Expr ident;
-        Stmnt *constdecl;
-    } capture;
+    Capture capture;
 
     Arr(Stmnt) cases;
 } Switch;
@@ -106,11 +104,8 @@ typedef struct For {
 
 typedef struct ForEach {
     Expr iterator;
-    CaptureKind capturekind;
-    union {
-        Expr ident;
-        Stmnt *constdecl;
-    } capture;
+    Capture captures[2];
+
     Arr(Stmnt) body;
 } ForEach;
 
