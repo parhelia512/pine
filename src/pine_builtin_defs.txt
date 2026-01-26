@@ -87,7 +87,7 @@ PineOption_##Tname pineoption_##Tname(T some) {\
     ret.ok = true;\
     return ret;\
 }\
-PineOption_##Tname Pineoptionnull_##Tname() {\
+PineOption_##Tname pineoptionnull_##Tname() {\
     PineOption_##Tname ret;\
     ret.ok = false;\
     return ret;\
