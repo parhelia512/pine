@@ -1024,7 +1024,6 @@ Expr parse_range(Parser *parser) {
             switch (peek(parser).kind) {
                 case TokIdent:
                 case TokIntLit:
-                case TokFloatLit:
                 case TokCharLit:
                     *right = parse_or(parser);
                     break;
@@ -1037,7 +1036,6 @@ Expr parse_range(Parser *parser) {
             switch (peek(parser).kind) {
                 case TokIdent:
                 case TokIntLit:
-                case TokFloatLit:
                 case TokCharLit:
                     *right = parse_or(parser);
                     break;
@@ -1306,7 +1304,7 @@ Stmnt parse_fn_decl(Parser *parser, Expr ident) {
 
     Token tok = peek(parser);
     if (tok.kind == TokLeftCurl) {
-        Stmnt *body = parse_block_curls(parser);
+        Arr(Stmnt) body = parse_block_curls(parser);
         fndecl.body = body;
         fndecl.has_body = true;
 
@@ -1622,7 +1620,7 @@ Stmnt parse_if(Parser *parser) {
         expect(parser, TokRightSquare);
     }
 
-    Stmnt *body = parse_block_curls(parser);
+    Arr(Stmnt) body = parse_block_curls(parser);
     Arr(Stmnt) else_block = NULL;
 
     Token tok = peek(parser);
@@ -1726,9 +1724,37 @@ Stmnt parse_extern(Parser *parser) {
     return stmnt_extern(stmnt, index);
 }
 
-Stmnt parse_iterative_for(Parser *parser) {
-    comp_elog("iterative for loop not implemented...");
-    return (Stmnt){};
+Stmnt parse_for_each(Parser *parser) {
+    size_t index = (size_t)parser->cursors_idx;
+
+    Expr iterator = parse_expr(parser);
+    expect(parser, TokRightBracket);
+
+    Token tok = peek(parser);
+    Expr capture = expr_none();
+    // for (<iterator>) <[capture]>
+    if (tok.kind == TokLeftSquare) {
+        next(parser);
+        tok = expect(parser, TokIdent);
+
+        Identifiers convert = convert_ident(parser, tok);
+        if (convert.kind == IkIdent) {
+            capture = convert.expr;
+        } else {
+            elog(parser, parser->cursors_idx, "capture must be a unique identifier");
+            return parse_next_stmnt(parser);
+        }
+        expect(parser, TokRightSquare);
+    }
+
+    Arr(Stmnt) body = parse_block_curls(parser);
+
+    return stmnt_foreach((ForEach){
+        .iterator = iterator,
+        .capture.ident = capture,
+        .capturekind = capture.kind == EkNone ? CkNone : CkIdent,
+        .body = body,
+    }, index);
 }
 
 Stmnt parse_for_decl(Parser *parser, Expr ident) {
@@ -1755,7 +1781,7 @@ Stmnt parse_for(Parser *parser) {
 
     expect(parser, TokLeftBracket);
     if (peek(parser).kind != TokSemiColon && peek_after(parser).kind != TokColon) {
-        return parse_iterative_for(parser);
+        return parse_for_each(parser);
     }
 
     Stmnt *decl = ealloc(sizeof(Stmnt)); *decl = stmnt_none();
@@ -1794,7 +1820,7 @@ condition: {}
         next(parser);
     }
 
-    Stmnt *body = parse_block_curls(parser);
+    Arr(Stmnt) body = parse_block_curls(parser);
     return stmnt_for((For){
         .decl = decl,
         .condition = cond,

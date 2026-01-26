@@ -436,15 +436,13 @@ void sema_range_lit(Sema *sema, Expr *expr, bool slice) {
     }
 
     if (slice && expr->rangelit.end->kind == EkNone && expr->rangelit.inclusive) {
-        elog(sema, expr->cursors_idx, "range slice cannot be inclusive when end is the length of element");
+        elog(sema, expr->cursors_idx, "range slice cannot be inclusive when end is inferred");
     }
 
-    if (expr->rangelit.start->kind != EkNone && !tc_is_unsigned(sema, *expr->rangelit.start)) {
-        elog(sema, expr->cursors_idx, "range literals must be unsigned integers");
-    }
-
-    if (expr->rangelit.end->kind != EkNone && !tc_is_unsigned(sema, *expr->rangelit.end)) {
-        elog(sema, expr->cursors_idx, "range literals must be unsigned integers");
+    if (tc_is_unsigned(sema, *expr->rangelit.start)) {
+        *expr->type.range.subtype = type_number(TkUsize, TYPEVAR, expr->type.range.subtype->cursors_idx);
+    } else {
+        *expr->type.range.subtype = type_number(TkIsize, TYPEVAR, expr->type.range.subtype->cursors_idx);
     }
 }
 
@@ -1347,6 +1345,8 @@ void sema_if(Sema *sema, Stmnt *stmnt) {
     symtab_new_scope(sema);
     if (captured->kind != SkNone) {
         symtab_push(sema, captured->constdecl.name.ident, *captured);
+    } else {
+        free(captured);
     }
 
     sema_block(sema, iff->body);
@@ -1446,6 +1446,67 @@ void sema_for(Sema *sema, Stmnt *stmnt) {
     symtab_pop_scope(sema);
 }
 
+void sema_for_each(Sema *sema, Stmnt *stmnt) {
+    assert(stmnt->kind == SkForEach);
+    ForEach *foreach = &stmnt->foreach;
+
+    sema_expr(sema, &foreach->iterator);
+
+    Type subtype = type_none();
+    switch (foreach->iterator.type.kind) {
+        case TkRange:
+            if (foreach->capturekind == CkNone) {
+                break;
+            }
+            subtype = *foreach->iterator.type.range.subtype;
+            break;
+        case TkSlice:
+            if (foreach->capturekind == CkNone) {
+                break;
+            }
+            subtype = *foreach->iterator.type.slice.of;
+            break;
+        case TkArray:
+            if (foreach->capturekind == CkNone) {
+                break;
+            }
+            subtype = *foreach->iterator.type.array.of;
+            break;
+        default: {}
+            strb t = string_from_type(foreach->iterator.type);
+            elog(sema, stmnt->cursors_idx, "cannot iterate over %s, must be an array, slice, or range", t);
+            strbfree(t);
+
+            if (foreach->capturekind == CkNone) {
+                break;
+            }
+            subtype = type_poison();
+            break;
+    }
+
+    Stmnt *capture = ealloc(sizeof(Stmnt));
+    *capture = stmnt_constdecl((ConstDecl){
+        .type = subtype,
+        .name = foreach->capture.ident,
+        .value = expr_none(),
+    }, foreach->capture.ident.cursors_idx);
+
+    foreach->capturekind = CkConstDecl;
+    foreach->capture.constdecl = capture;
+
+    symtab_new_scope(sema);
+    if (capture->constdecl.type.kind != TkNone) {
+        symtab_push(sema, capture->constdecl.name.ident, *capture);
+    } else {
+        free(capture);
+    }
+
+    sema->envinfo.forl = true;
+    sema_block(sema, foreach->body);
+    sema->envinfo.forl = false;
+    symtab_pop_scope(sema);
+}
+
 void sema_block(Sema *sema, Arr(Stmnt) body) {
     for (size_t i = 0; i < arrlenu(body); i++) {
         Stmnt *stmnt = &body[i];
@@ -1514,6 +1575,9 @@ void sema_block(Sema *sema, Arr(Stmnt) body) {
                 break;
             case SkFor:
                 sema_for(sema, stmnt);
+                break;
+            case SkForEach:
+                sema_for_each(sema, stmnt);
                 break;
             case SkCase:
                 elog(sema, stmnt->cursors_idx, "illegal case statement without switch statement");
@@ -1625,6 +1689,9 @@ void sema_defer(Sema *sema, Stmnt *stmnt) {
         case SkFor:
             sema_for(sema, stmnt->defer);
             break;
+        case SkForEach:
+            sema_for_each(sema, stmnt->defer);
+            break;
         case SkBlock:
             sema_block(sema, stmnt->defer->block);
             break;
@@ -1715,6 +1782,7 @@ void sema_extern(Sema *sema, Stmnt *stmnt) {
             elog(sema, stmnt->cursors_idx, "illegal use of case statement, not inside a function");
             break;
         case SkFor:
+        case SkForEach:
             elog(sema, stmnt->externf->cursors_idx, "illegal use of for loop, not inside a function");
             break;
         case SkExtern:
@@ -1943,6 +2011,7 @@ void sema_analyse(Sema *sema) {
                 elog(sema, stmnt->cursors_idx, "illegal use of if statement, not inside a function");
                 break;
             case SkFor:
+            case SkForEach:
                 elog(sema, stmnt->cursors_idx, "illegal use of for loop, not inside a function");
                 break;
         }

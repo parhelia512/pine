@@ -136,6 +136,14 @@ Stmnt stmnt_for(For v, size_t index) {
     };
 }
 
+Stmnt stmnt_foreach(ForEach v, size_t index) {
+    return (Stmnt){
+        .kind = SkForEach,
+        .cursors_idx = index,
+        .foreach = v,
+    };
+}
+
 Stmnt stmnt_block(Arr(Stmnt) v, size_t index) {
     return (Stmnt){
         .kind = SkBlock,

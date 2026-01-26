@@ -24,6 +24,7 @@ typedef enum StmntKind {
     SkSwitch,
     SkCase,
     SkFor,
+    SkForEach,
     SkBlock,
     SkExtern,
     SkDirective,
@@ -103,6 +104,16 @@ typedef struct For {
     Arr(Stmnt) body;
 } For;
 
+typedef struct ForEach {
+    Expr iterator;
+    CaptureKind capturekind;
+    union {
+        Expr ident;
+        Stmnt *constdecl;
+    } capture;
+    Arr(Stmnt) body;
+} ForEach;
+
 typedef enum DirectiveKind {
     DkNone,
     DkLink,
@@ -143,6 +154,7 @@ typedef struct Stmnt {
         Switch switchf;
         Case casef;
         For forf;
+        ForEach foreach;
         Stmnt *externf;
 
         Arr(Stmnt) block;
@@ -169,6 +181,7 @@ Stmnt stmnt_if(If v, size_t index);
 Stmnt stmnt_switch(Switch v, size_t index);
 Stmnt stmnt_case(Case v, size_t index);
 Stmnt stmnt_for(For v, size_t index);
+Stmnt stmnt_foreach(ForEach v, size_t index);
 Stmnt stmnt_block(Arr(Stmnt) v, size_t index);
 
 Stmnt stmnt_directive(Directive v, size_t index);

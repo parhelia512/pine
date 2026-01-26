@@ -21,6 +21,16 @@ extern unsigned int builtin_defs_len;
 
 const char *alphabet = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
 
+strb gen_random_ident() {
+#define ALPHABET_LEN 52
+    strb r = NULL;
+    for (int i = 0; i < 10; i++) {
+        strbpush(&r, alphabet[rand() % ALPHABET_LEN]);
+    }
+    return r;
+#undef ALPHABET_LEN
+}
+
 void mastrfree(MaybeAllocStr s) {
     if (s.alloced) strbfree(s.str);
 }
@@ -1322,6 +1332,101 @@ void gen_for(Gen *gen, Stmnt stmnt) {
     mastrfree(cond);
 }
 
+void gen_for_each_array(Gen *gen, Stmnt stmnt) {
+    assert(stmnt.kind == SkForEach && stmnt.foreach.iterator.type.kind == TkArray);
+    ForEach foreach = stmnt.foreach;
+
+    strb index = gen_random_ident();
+    MaybeAllocStr access = gen_expr(gen, foreach.iterator);
+    MaybeAllocStr len = gen_expr(gen, *foreach.iterator.type.array.len);
+
+    // create loop
+    gen_indent(gen);
+    gen_writeln(gen, "for (usize %s = 0; %s < %s; %s++) {", index, index, len.str, index);
+
+    // create catpure
+    strb proto = gen_decl_proto(gen, *foreach.capture.constdecl);
+    gen_writeln(gen, "%s = (%s)[%s];", proto, access.str, index);
+
+    gen->indent++;
+    gen_indent(gen);
+    gen_block(gen, foreach.body);
+    gen->indent--;
+
+    gen_indent(gen);
+    gen_writeln(gen, "}");
+
+    strbfree(proto);
+    mastrfree(access);
+    mastrfree(len);
+    strbfree(index);
+}
+
+void gen_for_each_slice(Gen *gen, Stmnt stmnt) {
+    assert(stmnt.kind == SkForEach && stmnt.foreach.iterator.type.kind == TkSlice);
+    ForEach foreach = stmnt.foreach;
+
+    strb index = gen_random_ident();
+    MaybeAllocStr access = gen_expr(gen, foreach.iterator);
+
+    // create loop
+    gen_indent(gen);
+    gen_writeln(gen, "for (usize %s = 0; %s < (%s).len; %s++) {", index, index, access.str, index);
+
+    strb proto = gen_decl_proto(gen, *foreach.capture.constdecl);
+    gen_writeln(gen, "%s = (%s).ptr[%s];", proto, access.str, index);
+
+    gen->indent++;
+    gen_indent(gen);
+    gen_block(gen, foreach.body);
+    gen->indent--;
+
+    gen_indent(gen);
+    gen_writeln(gen, "}");
+
+    strbfree(proto);
+    mastrfree(access);
+    strbfree(index);
+}
+
+void gen_for_each_range(Gen *gen, Stmnt stmnt) {
+    assert(stmnt.kind == SkForEach && stmnt.foreach.iterator.type.kind == TkRange);
+    ForEach foreach = stmnt.foreach;
+
+    MaybeAllocStr subtype = gen_type(gen, *foreach.iterator.type.range.subtype);
+    const char *index = foreach.capture.constdecl->constdecl.name.ident;
+    MaybeAllocStr start = gen_expr(gen, *foreach.iterator.rangelit.start);
+    MaybeAllocStr end = gen_expr(gen, *foreach.iterator.rangelit.end);
+    bool inclusive = foreach.iterator.rangelit.inclusive;
+
+    // create loop
+    gen_indent(gen);
+    gen_write(gen, "for (%s %s = %s; %s %s %s; %s++) ", subtype.str, index, start.str, index, inclusive ? "<=" : "<", end.str, index);
+
+    gen_block(gen, foreach.body);
+
+    mastrfree(end);
+    mastrfree(start);
+    mastrfree(subtype);
+}
+
+void gen_for_each(Gen *gen, Stmnt stmnt) {
+    assert(stmnt.kind == SkForEach);
+    ForEach foreach = stmnt.foreach;
+    switch (foreach.iterator.type.kind) {
+        case TkArray:
+            gen_for_each_array(gen, stmnt);
+            break;
+        case TkSlice:
+            gen_for_each_slice(gen, stmnt);
+            break;
+        case TkRange:
+            gen_for_each_range(gen, stmnt);
+        default:
+            break;
+    }
+}
+
 void gen_stmnt(Gen *gen, Stmnt *stmnt) {
     switch (stmnt->kind) {
         case SkNone:
@@ -1382,6 +1487,9 @@ void gen_stmnt(Gen *gen, Stmnt *stmnt) {
             break;
         case SkFor:
             gen_for(gen, *stmnt);
+            break;
+        case SkForEach:
+            gen_for_each(gen, *stmnt);
             break;
     }
 }

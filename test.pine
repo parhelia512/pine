@@ -1,14 +1,19 @@
 extern puts :: fn(s: cstring) i32;
+extern putchar :: fn(c: i32) i32;
 
 main :: fn(args: []string) void {
-    for (i: isize = 0; i < cast(isize)args.len; i += 1;) {
-        if (i == 0) {
-            continue;
-        }
-        if (i == 2) {
-            break;
-        }
-
-        puts(args[i].ptr);
+    for (args) [arg] {
+        puts(arg.ptr);
     }
+
+    nums := [2]i32{6, 7};
+    for (nums) [n] {
+        putchar(cast(i32)n + cast(i32)'0');
+    }
+    putchar(cast(i32)'\n');
+
+    for (0..10) [i] {
+        putchar(cast(i32)i + cast(i32)'0');
+    }
+    putchar(cast(i32)'\n');
 }
