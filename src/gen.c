@@ -1714,6 +1714,7 @@ void gen_resolve_defs(Gen *gen) {
 void gen_generate(Gen *gen) {
     strbprintf(&gen->defs, "%.*s", builtin_defs_len, builtin_defs);
     strbprintf(&gen->code, "#include \"output.h\"\n");
+    gen->def_loc = builtin_defs_len;
 
     for (size_t i = 0; i < arrlenu(gen->ast); i++) {
         Stmnt stmnt = gen->ast[i];

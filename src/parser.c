@@ -1756,6 +1756,7 @@ Stmnt parse_for_each(Parser *parser) {
         tok = peek(parser);
         if (tok.kind != TokComma) {
             expect(parser, TokRightSquare);
+            goto after_capture;
         }
 
         next(parser);
@@ -1771,7 +1772,7 @@ Stmnt parse_for_each(Parser *parser) {
 
         expect(parser, TokRightSquare);
     }
-
+after_capture: {}
     Arr(Stmnt) body = parse_block_curls(parser);
 
     return stmnt_foreach((ForEach){

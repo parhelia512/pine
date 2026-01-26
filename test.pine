@@ -1,11 +1,10 @@
-extern putchar :: fn(c: i32) i32;
-extern puts :: fn(s: cstring) i32;
+whatever :: [_]i32{1, 2};
 
-main :: fn(args: []string) void {
-    for (args) [arg, i] {
-        putchar(cast(i32)i + cast(i32)'0');
-        putchar(cast(i32)':');
-        putchar(cast(i32)' ');
-        puts(arg.ptr);
+extern putchar :: fn(c: i32) i32;
+
+main :: fn() void {
+    for (whatever) [what] {
+        putchar(cast(i32)what + cast(i32)'0');
+        putchar(cast(i32)'\n');
     }
 }
